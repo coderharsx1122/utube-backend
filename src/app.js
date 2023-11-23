@@ -15,4 +15,14 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
+app.get('/',(req,res)=>{
+    res.send("<h1>Hello from the server side</h1>")
+})
+
+// routes 
+import  userRouter  from "./routes/user.routes.js"  
+
+// // routers decleration
+app.use('/api/v1/users',userRouter)
+
 export { app }
