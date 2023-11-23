@@ -2,7 +2,8 @@ import { User } from '../models/user.model.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 
 const registerUser = (async (req, res) => {
- 
+  
+    
     // extract data from the user req
 
     const {username,email,fullname,avatar,coverimage,password} = req.body
