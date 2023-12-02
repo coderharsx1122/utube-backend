@@ -4,9 +4,8 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.js'
 
-
 // Register User
-const registerUser = asyncHandler(async (req, res, next) => {
+const registerUser = asyncHandler(async (req, res) => {
 
         // extract data from the user req
         const { username, email, fullName, password } = req.body
@@ -49,5 +48,12 @@ const registerUser = asyncHandler(async (req, res, next) => {
         // send response
         return res.status(201).json(new ApiResponse(200, createdUser, "User registered successfully"))
 
+})
+
+
+const loginUser = asyncHandler(async (req,res)=>{
+    // extract data from req.body
+    // check if user exist and validate the user
+    // select and send the response
 })
 export { registerUser }
