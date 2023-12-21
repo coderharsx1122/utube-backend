@@ -9,9 +9,8 @@ import { uploadOnCloudinary } from '../utils/cloudinary.js'
 const generate_Access_and_Refresh_Token = async (userId) => {
     try {
         const user = await User.findById(userId)
-        const refreshToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
         const accessToken = user.generateAccessToken()
-        user.generateRefreshToken()
 
         // save refreshToken in 
         user.refreshToken = refreshToken
@@ -79,7 +78,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { email, username, password } = req.body
 
-    if (!username || !email) throw new ApiError(400, "Username or Email is required")
+    if (!username && !email) throw new ApiError(400, "Username or Email is required")
 
     const user = await User.findOne({
         $or: [username, email]
@@ -97,23 +96,54 @@ const loginUser = asyncHandler(async (req, res) => {
     const userdata = await User.findById(user._id).select("-password -refreshToken")
 
     const options = {
-        httpOnly:true, // only server can modify the cookie (unlike by default nature of cookie)
-        secure:true
+        httpOnly: true, // only server can modify the cookie (unlike by default nature of cookie)
+        secure: true
+    }
+
+    // send back response
+    return res.status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(200,
+                {
+                    user: userdata,
+                    accessToken: accessToken,
+                    refreshToken: refreshToken,
+                },
+                "User Successfully logged in"
+            )
+        )
+
+})
+
+const logoutUser = asyncHandler(async (req, res) => {
+    // clear cookies from frontend
+    // clear refresh token from the db
+    const user = req.user
+    await User.findByIdAndUpdate(
+        user._id,
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        },
+        {
+            new: true // return new values
+        }
+    )
+    const options = {
+        httpOnly: true,
+        secure: true
     }
 
     return res.status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",refreshToken,options)
-    .json(
-        new ApiResponse(200,
-            {
-                user:userdata,
-                accessToken:accessToken,
-                refreshToken:refreshToken,
-            },
-            "User Successfully logged in"
-            )
-    )
-
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(new ApiResponse(200,{},"User Succsesfully loggedout"))
 })
-export { registerUser, loginUser }
+export {
+    registerUser,
+    loginUser,
+    logoutUser
+}
